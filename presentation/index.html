@@ -57,10 +57,9 @@ presented by Matt Conrad
             <!--- MWCTODO: be sure to close with a link to the MSDN documentation acknowledge telerik page too --->
             <ul class="medium">
                 <li>Await Inside Catch/Finally</li>
-                <li>"nameOf()" Expression</li>
+                <li>"nameof()" Keyword</li>
                 <li>New Dictionary Initialization Syntax</li>
                 <li>Lambda Function Declarations</li>
-                <li>Using "using" With Static Members</li>
                 <li>Property Initializers</li>
                 <li>Exception Filters</li>
                 <li>String Interpolation Syntax</li>
@@ -70,7 +69,6 @@ presented by Matt Conrad
 
         <section>
             <p>Await Inside Catch/Finally</p>
-            <br />
             <p class="medium">You didn't used to be able to call async methods inside a <code>catch</code> or <code>finally</code> block. Now you can:</p>
             <pre>
             <code class="cs smallfont" style="max-height: 550px;">
@@ -100,58 +98,155 @@ presented by Matt Conrad
         </section>
                 
         <section>
-            <p>Databases folder: a quick stop and we'll return later.</p>
+            <p>nameof() Keyword</p>
+            <p class="medium">The nameof() keyword returns a string that matches the name of the variable that's passed to it.</p>
+            <p class="medium">So if you say <code>nameof(myParam)</code> you'll get back the string <code>"myParam"</code>.</p>
             <br />
-            <p class="medium">SQL Server has the concept of system databases and user databases</p>
-            <br />
-            <p class="medium">System databases are built in databases used for managing the server itself</p>
-            <br />
-            <p class="medium">User databases are made by programmers to hold customized data. If you're not a DBA, you use user databases.</p>
-            <br />
-            <br />
-            <p class="medium">There's much more to talk about here. We'll come back to this in a while.</p>
-        </section>
-
-        <section>
-            <p>Security folder:</p>
-            <br />
-            <ul class="medium">
-                <li>Logins: these are <strong>server level</strong> accounts. Database level <em>users</em> are related, but something different.</li>
-                <li>Server Roles: group permissions inside SQL Server, you don't have to apply permissions to every user individually</li>
-            </ul>
-            <br />
-        </section>
-
-        <section>
-            <p>Replication:</p>
-            <br />
-            <p class="medium">Replication copies data from one SQL server to another, to keep data from multiple servers in sync. It's a whole topic of its own.</p>
-            <br />
-        </section>
-
-        <section>
-            <p>Management:</p>
-            <br />
-            <ul class="medium">
-                <li>SQL Server Logs: Here’s one you’ll probably interact with. If you’re having weird server level issues (SQL Server won’t start, system databases are behaving strangely, etc), you can maybe get a clue from the server logs. Note that if you can’t even connect to SQL Server you can still view the logs from the filesystem, hit Google for “SQL Server log location” for how to find the log files for your SQL Server version.</li>
-                <li>On a full install of SQL Server, there will be more here, like database maintenance plans.</li>
-            </ul>
-            <br />
+            <p class="medium">Getting the string value of a parameter name can be handy in some situations. You might use nameof() in logging or in exception handling:</p>
+            <pre>
+            <code class="cs smallfont">
+    public string DoSomething(string input) 
+    {
+        if(input == null) 
+        {
+            //this is easy to overlook if you should rename "input".
+            //throw new ArgumentNullException("Parameter input cannot be null.");
+            
+            //this will automatically update as part of a parameter rename (via refactoring tools).
+            throw new ArgumentNullException("Parameter " + nameof(input) + " cannot be null.");
+        }
+        //...
+    }
+            </code>
+            </pre>
         </section>
         
         <section>
-            <p>Back to Databases:</p>
-            <br />
-            <p>Right clicking databases: Properties: noteworthy stuff:</p>
-            <br />
-            <ul class="medium">
-                <li>General: size</li>
-                <li>Files: databases are files, usually two files, data and log</li>
-                <li>Options: Collation, Recovery Model (important!), Compatiblity Level</li>
-                <li>Permissions: Database level permissions, distinct from object level permissions</li>
-                <li>Also, in the pane below the page listing, you’ll see View Connection Properties which is sometimes handy.</li>
-            </ul>
-            <br />
+            <p>New Dictionary Initialization Syntax:</p>
+            <p class="medium">You've been able to initialize dictionary literals with nested brackets for a while, but C# 6 introduces a new syntax that looks more "dictionaryish":</p>
+            <pre>
+            <code class="cs smallfont">
+    public void DoStuff() 
+    {
+        //the old way. the key is the value that comes first.
+        var stars = new Dictionary&lt;string, string&gt; ()
+        {
+             { "Michael Jordon", "Basketball" },
+             { "Babe Ruth", "Baseball" }
+        };
+        
+        //the new way! the key is in brackets, same as when you're actually using the dictionary
+        var starrrz = new Dictionary&lt;string, string&gt; ()
+        {
+            ["Michael Jordan"] = "Basketball",
+            ["Babe Ruth"] = "Baseball"
+        };
+        //...
+    }
+            </code>
+            </pre>
+        </section>
+        
+        <section>
+            <p>Lambda Function Declarations:</p>
+            <p class="medium">Declaring named functions can now be done using terse lambda syntax:</p>
+            <pre>
+            <code class="cs smallfont">
+    public double MultiplyOldWay(double x, double y) 
+    {
+        return x * y;
+    }
+    
+    public double MultiplyNewWay(double x, double y) => x * y;
+            </code>
+            </pre>
+        </section>
+
+        <section>
+            <p>Property Initializers:</p>
+            <p class="medium">You can now declare and set an initial value for properties in the same expression:</p>
+            <pre>
+            <code class="cs smallfont">
+    public class OldCustomer
+    {
+        public Guid customerID { get; set; }
+        
+        public OldCustomer()
+        {
+            customerID = Guid.NewGuid();
+        }
+    }            
+            
+    public class NewCustomer
+    {
+        public Guid customerID { get; set; } = Guid.NewGuid();
+    }            
+            </code>
+            </pre>
+        </section>
+
+        <section>
+            <p>Exception Filters:</p>
+            <p class="medium">It's common to have to dig into the details of exceptions during exception handling. You used to have to write your own code inside the <code>catch</code> clause to do this.</p>
+            <p class="medium">Now you can use <code>when</code> to filter exceptions as part of the <code>catch</code>.</p>
+            <div style="width: 49%; float: left;">
+                <pre>
+                <code class="cs smallfont" style="min-height: 400px">
+    //old way
+    try
+    {
+        throw new Exception(httpStatusCode.ToString());
+    }
+    catch (Exception ex)
+    {
+        if (ex.Message.Equals("500"))
+            Write("Bad Request");
+        else if (ex.Message.Equals("401"))
+            Write("Unauthorized");
+        else if (ex.Message.Equals("402"))
+            Write("Payment Required");
+    }
+                </code>
+                </pre>
+            </div>
+            <div style="width: 49%; min-height: 300px; float: left;">
+                <pre>
+                <code class="cs smallfont" style="min-height: 400px">
+    //new way
+    try
+    {
+        throw new Exception(httpStatusCode.ToString());
+    }
+    catch (Exception ex) when (ex.Message.Equals("400"))
+    {
+        Write("Bad Request");
+    }
+    catch (Exception ex) when (ex.Message.Equals("401"))
+    {
+        Write("Unauthorized");
+    }
+                </code>
+                </pre>
+            </div>
+        </section>
+        
+        <section>
+            <p>String Interpolation Syntax</p>
+            <p class="medium">C# now has a nice way to concatenate values in a string: the <code>$</code> prefix at the beginning of a double quoted string:</p>
+            <pre>
+            <code class="cs smallfont">
+    public void DoThings(string animal, string vegetable, string mineral) 
+    {
+        //instead of this
+        var everything1 = "Animal: " + animal + ", Vegetable: " + vegetable + ", Mineral: " + mineral;
+        
+        //or this:
+        //...
+    }
+          
+            
+            </code>
+            </pre>
         </section>
 
         <section>
